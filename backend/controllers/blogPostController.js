@@ -38,7 +38,32 @@ const createPost=async(req,res)=>{
 //@access Private (Author or Admin)
 const updatePost=async(req, res)=>{
     try{
-        
+       const post=await BlogPost.findById(req.params.id);
+       if(!post) return res.status(404).json({message: "post not found"}); 
+
+       if(
+        post.author.toString()!==req.user._id.toString()&&
+        !req.user.isAdmin
+       ){
+        return res
+            .status(403)
+            .json({message: "not authorised to update this post"});
+       }
+
+       const updatedData = req.body;
+        if (updatedData.title) {
+        updatedData.slug = updatedData.title
+            .toLowerCase()
+            .replace(/ /g, "-")
+            .replace(/[^\w-]+/g,"");
+        }
+
+        const updatedPost = await BlogPost.findByIdAndUpdate(
+            req.params.id,
+            updatedData,
+            { new: true }
+        );
+        res.json(updatedPost);
     } catch(err){
         res
             .status(500)
@@ -51,7 +76,11 @@ const updatePost=async(req, res)=>{
 //@access private (author or admin)
 const deletePost=async(req, res)=>{
     try{
+        const post=await BlogPost.findById(req.params.id);
+        if(!post) return res.status(404).json({message: "Post not found"});
 
+        await post.deleteOne();
+        res.json({message: "Post deleted"});
     } catch(err){
         res
             .status(500)
@@ -64,7 +93,42 @@ const deletePost=async(req, res)=>{
 //@access public
 const getAllPosts=async(req, res)=>{
     try{
+        const status=req.query.status || "published";
+        const page=parseInt(req.query.page) || 1;
+        const limit=5;
+        const skip=(page-1)*limit;
 
+        //determine filter for main post response
+        let filter={};
+        if(status=="published") filter.isDraft=false;
+        else if (status=="draft") filter.isDraft=true;
+
+        //fetch paginated post
+        const posts=await BlogPost.find(filter)
+            .populate("author","name profileImageUrl")
+            .sort({updateedAt: -1})
+            .skip(skip)
+            .limit(limit);
+        
+        //count totals pagination and post counts
+        const [totalCount, allCount, publishedCount, draftCount] = await Promise.all([
+            BlogPost.countDocuments(filter), // for pagination of current tab
+            BlogPost.countDocuments(),
+            BlogPost.countDocuments({ isDraft: false }),
+            BlogPost.countDocuments({ isDraft: true }),
+        ]);
+
+        res.json({
+            posts,
+            page,
+            totalPages: Math.ceil(totalCount / limit),
+            totalCount,
+            counts: {
+                all: allCount,
+                published: publishedCount,
+                draft: draftCount,
+            }
+        });
     } catch(err){
         res
             .status(500)
@@ -77,7 +141,13 @@ const getAllPosts=async(req, res)=>{
 //@access public
 const getPostBySlug=async(req, res)=>{
     try{
+        const post = await BlogPost.findOne({ slug: req.params.slug }).populate(
+            "author",
+            "name profileImageUrl"
+        );
 
+        if (!post) return res.status(404).json({ message: "Post not found" });
+        res.json(post);
     } catch(err){
         res
             .status(500)
@@ -90,7 +160,11 @@ const getPostBySlug=async(req, res)=>{
 //@access public
 const getPostsByTag=async(req, res)=>{
     try{
-
+        const posts = await BlogPost.find({
+            tags: req.params. tag,
+            isDraft: false,
+        }).populate("author", "name profileImageUrl");
+        res.json(posts);
     } catch(err){
         res
             .status(500)
@@ -103,6 +177,15 @@ const getPostsByTag=async(req, res)=>{
 //@access public
 const searchPosts=async(req, res)=>{
     try{
+        const q = req.query.q;
+        const posts = await BlogPost.find({
+            isDraft: false,
+            $or: [
+                { title: { $regex: q, $options: "i" } },
+                { content: { $regex: q, $options: "i" } },
+            ],
+        }).populate("author", "name profileImageUrl");
+        res.json(posts);
 
     } catch(err){
         res
@@ -116,7 +199,8 @@ const searchPosts=async(req, res)=>{
 //@access public
 const incrementView=async(req, res)=>{
     try{
-
+       await BlogPost.findByIdAndUpdate(req.params.id, {$inc: {view: 1}}); 
+       res.json({message: "View count incremented"});
     } catch(err){
         res
             .status(500)
@@ -129,7 +213,8 @@ const incrementView=async(req, res)=>{
 //@access public
 const likePost=async(req, res)=>{
     try{
-
+        await BlogPost.findByIdAndUpdate(req.params.id, {$inc: {likes: 1}}); 
+       res.json({message: "like added"});
     } catch(err){
         res
             .status(500)
@@ -137,12 +222,17 @@ const likePost=async(req, res)=>{
     }
 };
 
-//@desc get all posts of logged-in user
+//@desc get top trending post
 //@route GET /api/posts/trending
 //@access private
 const getTopPosts=async(req, res)=>{
     try{
+        // Top performing posts
+        const posts = await BlogPost.find({ isDraft: false })
+            .sort({ views: -1, likes: -1 })
+            .limit(5);
 
+        res.json(posts);
     } catch(err){
         res
             .status(500)
