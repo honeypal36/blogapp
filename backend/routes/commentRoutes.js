@@ -6,7 +6,7 @@ const {
     deleteComment,
     getAllComments,
 } = require("../controllers/commentController");
-const { protect } = require("../middlewares/authMiddleware");
+const { protect } = require("../middlewares/authMiddlewares");
 
 router.post("/:postId", protect, addComment);
 router.get("/:postId", getCommentsByPost);
