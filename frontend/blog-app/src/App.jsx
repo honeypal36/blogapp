@@ -11,10 +11,12 @@ import Dashboard from "./pages/Admin/Dashboard";
 import BlogPosts from "./pages/Admin/BlogPosts";
 import BlogPostEditor from "./pages/Admin/BlogPostEditor";
 import Comments from "./pages/Admin/Comments";
+import UserProvider from "./context/userContext";
 
 const App = () => {
   return (
-    <div >
+    <UserProvider>
+      <div >
       <Router>
         <Routes>
           {/* Default Route */}
@@ -45,6 +47,8 @@ const App = () => {
         }}
       />
     </div>
+    </UserProvider>
+    
   )
 }
 
