@@ -6,6 +6,7 @@ import { UserContext } from '../../context/userContext';
 
 import AUTH_IMG from "../../assets/authimg.png"
 import Input from '../Inputs/Input';
+import { validateEmail } from '../../utils/helper';
 
 const Login = ({setCurrentPage}) => {
   const [email, setEmail] = useState("");
@@ -18,6 +19,45 @@ const Login = ({setCurrentPage}) => {
   // Handle Login Form Submit
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if(!validateEmail(email)){
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    if(!password){
+      setError("Please enter the password");
+      return;
+    }
+
+    setError("");
+
+    //login api call
+    try{
+      const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
+          email,
+          password,
+      });
+
+      const { token, role } = response.data;
+
+      if (token) {
+        localStorage. setItem("token", token);
+        updateUser(response.data);
+
+        if(role==="admin"){
+          setOpenAuthForm(false)
+          navigate("/admin/dashboard")
+        }
+        setOpenAuthForm(false)
+      }
+    } catch(error){
+      if (error. response && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    }
   };
   return (
     <div className='flex items-center'>
