@@ -42,7 +42,7 @@ const Login = ({setCurrentPage}) => {
       const { token, role } = response.data;
 
       if (token) {
-        localStorage. setItem("token", token);
+        localStorage.setItem("token", token);
         updateUser(response.data);
 
         if(role==="admin"){
@@ -52,7 +52,7 @@ const Login = ({setCurrentPage}) => {
         setOpenAuthForm(false)
       }
     } catch(error){
-      if (error. response && error.response.data.message) {
+      if (error.response && error.response.data.message) {
         setError(error.response.data.message);
       } else {
         setError("Something went wrong. Please try again.");

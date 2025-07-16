@@ -6,7 +6,9 @@ import { UserContext } from '../../context/userContext';
 
 import AUTH_IMG from "../../assets/authimg.png"
 import Input from '../Inputs/Input';
+import ProfilePhotoSelector from '../Inputs/ProfilePhotoSelector';
 import { validateEmail } from '../../utils/helper';
+import uploadImage from '../../utils/uploadImage';
 
 const Signup = ({setCurrentPage}) => {
   const [profilePic, setProfilePic] = useState(null);
@@ -14,6 +16,7 @@ const Signup = ({setCurrentPage}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [adminAccessToken, setAdminAccessToken] = useState("");
+  const [preview, setPreview] = useState(null);
 
   const [error, setError] = useState(null);
 
@@ -45,17 +48,49 @@ const Signup = ({setCurrentPage}) => {
 
     //SignUp API Call
     try {
+      //upload image if possible
+      if(profilePic){
+        const imgUploadRes=await uploadImage(profilePic);
+        profileImageUrl=imgUploadRes.imageUrl || "";
+      }
 
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        name: fullName,
+        email,
+        password,
+        profileImageUrl,
+        adminAccessToken
+      });
+
+      const {token, role}=response.data;
+
+      if(token){
+        localStorage.setItem("token", token);
+        updateUser(response.data);
+
+        //redirect based on role
+        if(role==="admin"){
+          setOpenAuthForm(false)
+          navigate("/admin/dashboard");
+          return;
+        }
+
+        navigate("/");
+        setOpenAuthForm(false)
+        return;
+      }
     } catch (error) {
       if (error.response && error.response.data.message) {
         setError(error.response.data.message);
       } else {
         setError("Something went wrong. Please try again.");
       }
+      setOpenAuthForm(false);
+      navigate("/");
     }
   };
 return(
-    <div className='flex items-center h-[520px]'>
+    <div className='flex items-center h-auto md:h-[520px]'>
       <div className='w-[90vw] md:w-[43vw] p-7 flex flex-col justify-center'>
         <h3 className='text-lg font-semibold text-black'>Create an account</h3>
         <p className='text-xs text-slate-700 mt-[5px] mb-6'>Join us today by entering your details below.</p>
@@ -63,7 +98,12 @@ return(
 
       <form onSubmit={handleSignUp}>
 
-        <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
+        <ProfilePhotoSelector
+          image={profilePic}
+          setImage={setProfilePic}
+          preview={preview}
+          setPreview={setPreview}
+        />
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-5'>
           <Input 
