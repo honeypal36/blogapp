@@ -61,32 +61,25 @@ const Signup = ({setCurrentPage}) => {
         profileImageUrl,
         adminAccessToken
       });
+      console.log("Signup response:", response.data);
 
-      const {token, role}=response.data;
-
-      if(token){
-        localStorage.setItem("token", token);
-        updateUser(response.data);
-
-        //redirect based on role
-        if(role==="admin"){
-          setOpenAuthForm(false)
-          navigate("/admin/dashboard");
-          return;
-        }
-
+      // If your backend does not return a token, just update user and navigate
+      updateUser(response.data);
+      setOpenAuthForm(false);
+      // If you want to redirect admin, check role property
+      if(response.data.role === "admin"){
+        navigate("/admin/dashboard");
+      } else {
         navigate("/");
-        setOpenAuthForm(false)
-        return;
       }
+      return;
     } catch (error) {
       if (error.response && error.response.data.message) {
         setError(error.response.data.message);
       } else {
         setError("Something went wrong. Please try again.");
       }
-      setOpenAuthForm(false);
-      navigate("/");
+      
     }
   };
 return(

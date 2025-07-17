@@ -11,11 +11,11 @@ const axiosInstance = axios.create({
 });
 
 // Request Interceptor
-axiosInstance.interceptors. request.use(
+axiosInstance.interceptors.request.use(
     (config) => {
         const accessToken = localStorage.getItem("token");
         if (accessToken) {
-            config.headers.Authorization = 'Bearer ${accessToken}';
+            config.headers.Authorization = `Bearer ${accessToken}`;
         }
         return config;
     },
@@ -25,7 +25,7 @@ axiosInstance.interceptors. request.use(
 );
 
 // Response Interceptor
-axiosInstance. interceptors. response. use(
+axiosInstance.interceptors.response.use(
     (response) => {
         return response;
     },

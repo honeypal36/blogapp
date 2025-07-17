@@ -33,20 +33,21 @@ const UserProvider = ({ children }) => {
     fetchUser();
     }, []);
 
-    const updateUser = () => {
-        setUser(null);
-        localStorage.removeItem("token", userData.token);
+    const updateUser = (userData) => {
+        setUser(userData);
+        // localStorage.removeItem("token", userData.token);
         setLoading(false);
     };
 
     const clearUser=()=>{
         setUser(null);
-        setSearchResults([]);
+        // setSearchResults([]);
         localStorage.removeItem("token");
     };
   return <UserContext.Provider 
     value={{
         user,
+        setUser,
         loading,
         updateUser,
         clearUser,
