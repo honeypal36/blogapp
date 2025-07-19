@@ -1,6 +1,6 @@
-import React from 'react'
 import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
 import SideMenu from './BlogLayout/SideMenu';
+import React, { useState } from 'react';
 
 import LOGO from "../../assets/logo.png"
 
@@ -12,7 +12,7 @@ const Navbar = ({activeMenu}) => {
       <button
         className='block lg:hidden text-black -mt-1'
         onClick={()=>{
-            setOpenSideMenu(!setOpenSideMenu);
+            setOpenSideMenu(!openSideMenu);
         }}
       >
         {openSideMenu ? (
@@ -26,7 +26,7 @@ const Navbar = ({activeMenu}) => {
 
       {openSideMenu && (
         <div className='fixed top-[61px] -ml-4 bg-white'>
-            <SideMenu activeMenu={activeMenu} />
+            <SideMenu activeMenu={activeMenu} setOpenSideMenu={setOpenSideMenu}/>
         </div>
       )}
     </div>

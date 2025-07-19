@@ -1,26 +1,31 @@
 import React, { useContext } from 'react'
+import { HiOutlineX } from 'react-icons/hi'
 import { BLOG_NAVBAR_DATA, SIDE_MENU_DATA } from '../../../utils/data'
 import { LuLogOut } from 'react-icons/lu'
 import {useNavigate} from "react-router-dom"
 import CharAvatar from '../../Cards/CharAvatar'
 import { UserContext } from '../../../context/userContext'
 
-const SideMenu = ({activeMenu, isBlogMenu, setOpenSideMenu}) => {
+const SideMenu = ({activeMenu, isBlogMenu=false, setOpenSideMenu}) => {
     const {user, setUser}=useContext(UserContext);
     const navigate=useNavigate();
+
     const handleClick=(route)=>{
         if(route==="logout"){
             handleLogout();
             return;
         }
-        setOpenSideMenu((prevState)=>!prevState)
+        
+
+        setOpenSideMenu((prevState)=>!prevState);
         navigate(route);
     };
+
     const handleLogout=()=>{
         localStorage.clear();
         setUser(null);
         navigate("/");
-        setOpenSideMenu((prevState)=>!prevState)
+        setOpenSideMenu((prevState)=>!prevState);
     };
   return (
     <div className='w-64 h-[calc(100vh-61px)] bg-white border-r border-gray-200/50 p-5 sticky top-[61px] z-2'>
@@ -54,7 +59,7 @@ const SideMenu = ({activeMenu, isBlogMenu, setOpenSideMenu}) => {
                 
             </div>
         )}
-        {(isBlogMenu?BLOG_NAVBAR_DATA:SIDE_MENU_DATA).map((item, index)=>(
+        {(isBlogMenu ? BLOG_NAVBAR_DATA : SIDE_MENU_DATA).map((item, index)=>(
             <button
                 key={`menu_${index}`}
                 className={`w-full flex items-center gap-4 text-[15px] ${

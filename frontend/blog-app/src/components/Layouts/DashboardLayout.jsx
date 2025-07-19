@@ -6,6 +6,7 @@ import Navbar from './Navbar';
 
 const DashboardLayout = ({children, activeMenu}) => {
   const {user}=useContext(UserContext);
+  
   return (
     <div className=''>
       <Navbar activeMenu={activeMenu} />
@@ -13,7 +14,7 @@ const DashboardLayout = ({children, activeMenu}) => {
       {user && (
         <div className='flex'>
           <div className='max-[1080]:hidden'>
-            <SideMenu activeMenu={SideMenu}/>
+            <SideMenu activeMenu={activeMenu} setOpenSideMenu={()=>{}}/>
           </div>
 
           <div className='grow mx-5'>{children}</div>
@@ -24,3 +25,5 @@ const DashboardLayout = ({children, activeMenu}) => {
 }
 
 export default DashboardLayout
+
+

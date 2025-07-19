@@ -62,6 +62,10 @@ const Signup = ({setCurrentPage}) => {
         adminAccessToken
       });
       console.log("Signup response:", response.data);
+      
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
 
       // If your backend does not return a token, just update user and navigate
       updateUser(response.data);
